@@ -22,10 +22,10 @@
 	export default {
 		name: "DetailParamInfo",
     props: {
-		  paramInfo: {
-		    type: Object,
+      paramInfo: {
+        type: Object,
         default() {
-		      return {}
+          return {}
         }
       }
     }
