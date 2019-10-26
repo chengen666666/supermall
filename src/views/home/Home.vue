@@ -41,7 +41,8 @@ import Scroll from "components/common/scroll/Scroll";
 import BackTop from 'components/content/backTop/BackTop';
 
 import { getHomeMultidata, getHomeGoods } from "network/home";
-import {debounce} from "common/utils";
+//import {debounce} from "common/utils";
+import {itemListenerMixin} from 'common/mixin'
 
 export default {
   name: "Home",
@@ -56,6 +57,8 @@ export default {
     BackTop
   },
 
+  mixins:[itemListenerMixin],
+
   data() {
     return {
       banners: [],
@@ -69,7 +72,7 @@ export default {
       isShowBackTop:false,
       tabOffsetTop:0,
       isTabFixed:false,
-      saveY:0
+      saveY:0,
     };
   },
 
@@ -89,7 +92,10 @@ export default {
   },
  
   deactivated(){
+    //1.保存y值
     this.saveY = this.$refs.scroll.getScrollY()
+    //2.取消全局事件的监听
+    this.$bus.$off('itemImageLoad',this.itemImgListener)
   },
 
   created() {
@@ -101,17 +107,21 @@ export default {
     this.getHomeGoods("sell");
     this.getHomeGoods("new");
 
-    
+    //3.手动代码点击一次
+    this.tabClick(0)
   },
 
   mounted(){
+    //这个地方img标签确实被挂载，但是其中的照片还没有占据高度
     //1.监听item中图片加载完成
-    const refresh = debounce(this.$refs.scroll.refresh,300)
-    this.$bus.$on('itemImageLoad',() => {
-      //console.log('-----');
-      refresh()
-    })
+    //this.$refs.scroll.refresh对这个函数进行防抖操作
+    // let newRefresh = debounce(this.$refs.scroll.refresh,300)
 
+    // //对监听的事件进行保存
+    // this.itemImgListener = () => {
+    //   newRefresh()
+    // }
+    // this.$bus.$on('itemImageLoad',this.itemImgListener)
     
   },
 
@@ -133,8 +143,12 @@ export default {
           this.currentType = "sell";
           break;
       }
-      this.$refs.tabControl1.currentIndex = index;
-      this.$refs.tabControl2.currentIndex = index;
+      //让两个TabControl的currentIndex保持一致
+      if(this.$refs.tabControl1 !== undefined){
+        this.$refs.tabControl1.currentIndex = index;
+        this.$refs.tabControl2.currentIndex = index;
+      }
+      
     },
 
     backClick(){
