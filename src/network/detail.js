@@ -18,6 +18,8 @@ export class Goods {
     this.columns = columns
     this.services = services
     this.realPrice = itemInfo.lowNowPrice
+    this.desc = itemInfo.desc;
+    
   }
 }
 
@@ -28,7 +30,8 @@ export class Shop {
     this.fans = shopInfo.cFans;
     this.sells = shopInfo.cSells;
     this.score = shopInfo.score;
-    this.goodsCount = shopInfo.cGoods
+    this.goodsCount = shopInfo.cGoods;
+    
   }
 }
 

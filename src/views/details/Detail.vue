@@ -1,7 +1,7 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav" @titleClick="titleClick"/>
-    <scroll class="content" ref="scroll">
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav"/>
+    <scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll">
       <!-- 属性：topImages 传入值：top-images -->
       <detail-swiper :top-images="topImages"/>
       <detail-base-info :goods="goods"/>
@@ -11,6 +11,9 @@
       <detail-comment-info :comment-info="commentInfo" ref="comment"/>
       <goods-list :goods="recommends" ref="recommend"/>
     </scroll>
+    <detail-bottom-bar @addCart="addToCart"/>
+    <back-top @click.native="backTop" v-show="isShowBackTop"/>
+    
   </div>
 </template>
 
@@ -22,13 +25,14 @@
   import DetailGoodsInfo from './childComps/DetailGoodsInfo'
   import DetailParamInfo from './childComps/DetailParamInfo'
   import DetailCommentInfo from './childComps/DetailCommentInfo'
+  import DetailBottomBar from './childComps/DetailBottomBar'
 
   import Scroll from 'components/common/scroll/Scroll'
   import GoodsList from 'components/content/goods/GoodsList'
 
   import {getDetail,Goods,Shop,GoodsParam,getRecommend} from 'network/detail'
   import {debounce} from 'common/utils'
-  import {itemListenerMixin} from 'common/mixin'
+  import {itemListenerMixin,backTopMixin} from 'common/mixin'
   export default {
     name:'Detail',
     data(){
@@ -43,6 +47,7 @@
         recommends:[],
         themeTopYs:[],
         getThemeTopY:null,
+        currentIndex:0
       }
     },
 
@@ -55,10 +60,11 @@
       DetailGoodsInfo,
       DetailParamInfo,
       DetailCommentInfo,
-      GoodsList
+      GoodsList,
+      DetailBottomBar
     },
 
-    mixins:[itemListenerMixin],
+    mixins:[itemListenerMixin,backTopMixin],
     
     created(){
       //1.保存传入的iid
@@ -121,12 +127,13 @@
 
       //4.给getThemeTopY赋值(对给this.themeTopYs赋值的操作进行防抖操作)
       this.getThemeTopY = debounce(() => {
-        console.log('----')
+        //console.log('----')
         this.themeTopYs = []
         this.themeTopYs.push(0);
-        this.themeTopYs.push(this.$refs.params.$el.offsetTop - 44)
+        this.themeTopYs.push(this.$refs.params.$el.offsetTop -44)
         this.themeTopYs.push(this.$refs.comment.$el.offsetTop -44)
         this.themeTopYs.push(this.$refs.recommend.$el.offsetTop -44)
+        this.themeTopYs.push(Number.MAX_VALUE)
         console.log(this.themeTopYs)
       },1000)
     },
@@ -141,7 +148,7 @@
     
     methods:{
       detailImageLoad(){
-        console.log('----')
+        //console.log('----')
         //防抖
         this.newRefresh()
         //this.$refs.scroll.refresh()
@@ -153,8 +160,50 @@
       titleClick(index){
         //console.log(index);
         this.$refs.scroll.scrollTo(0,-this.themeTopYs[index],1000)
+      },
+
+      contentScroll(position){
+        //console.log(position);
+        //1.获取y值
+        const positionY = -position.y
+        //2.positionY和主题中的值进行对比
+        let length = this.themeTopYs.length;
+        for (let i = 0;i < length-1;i++){
+
+          // if(this.currentIndex !== i && ((i < length - 1 && positionY >= this.themeTopYs[i] && positionY < this.themeTopYs[i+1]) 
+          //     || (i === length -1 && positionY >= this.themeTopYs[i]))){
+          //   this.currentIndex = i;
+          //   this.$refs.nav.currentIndex = this.currentIndex;
+
+            if(this.currentIndex !== i && (positionY >= this.themeTopYs[i] && positionY < this.themeTopYs[i+1])){
+              this.currentIndex = i;
+              this.$refs.nav.currentIndex = this.currentIndex;
+            }
+        }
+
+        //3.是否显示回到顶部
+        this.listenShowBackTop(position)
+      },
+
+      addToCart(){
+        //console.log('------')
+        //1.获取购物车需要展示的信息
+        const product = {}
+        product.image = this.topImages[0];
+        product.title = this.goods.title;
+        product.desc = this.goods.desc;
+        product.price = this.goods.realPrice;
+        product.iid = this.iid;
+
+        //2.将商品添加到购物车中
+        //this.$store.commit('addCart',product)
+        this.$store.dispatch('addCart',product)
+         
       }
+
+
     },
+    
 
     destroyed(){
       this.$bus.$off('itemImageLoad',this.itemImgListener)
@@ -165,13 +214,14 @@
 <style scoped>
   #detail{
     position:relative;
-    z-index: 9;
+    z-index: 1;
     background-color: #fff;
     height: 100vh;
   }
 
   .content{
-    height: calc(100% - 44px);
+    background-color: #fff;
+    height: calc(100% - 44px - 49px);
   }
 
   .detail-nav{
