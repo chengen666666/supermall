@@ -13,7 +13,7 @@
     </scroll>
     <detail-bottom-bar @addCart="addToCart"/>
     <back-top @click.native="backTop" v-show="isShowBackTop"/>
-    
+ 
   </div>
 </template>
 
@@ -33,6 +33,11 @@
   import {getDetail,Goods,Shop,GoodsParam,getRecommend} from 'network/detail'
   import {debounce} from 'common/utils'
   import {itemListenerMixin,backTopMixin} from 'common/mixin'
+
+  import {mapActions} from 'vuex'
+
+
+
   export default {
     name:'Detail',
     data(){
@@ -47,7 +52,8 @@
         recommends:[],
         themeTopYs:[],
         getThemeTopY:null,
-        currentIndex:0
+        currentIndex:0,
+
       }
     },
 
@@ -61,7 +67,8 @@
       DetailParamInfo,
       DetailCommentInfo,
       GoodsList,
-      DetailBottomBar
+      DetailBottomBar,
+
     },
 
     mixins:[itemListenerMixin,backTopMixin],
@@ -147,6 +154,7 @@
 
     
     methods:{
+      ...mapActions(['addCart']),
       detailImageLoad(){
         //console.log('----')
         //防抖
@@ -197,7 +205,15 @@
 
         //2.将商品添加到购物车中
         //this.$store.commit('addCart',product)
-        this.$store.dispatch('addCart',product)
+        //dispatch接收一个promise对象
+        
+        // this.$store.dispatch('addCart',product).then(res => {
+        //   console.log(res);
+        // })
+
+        this.addCart(product).then(res => {
+          this.$toast.show(res)
+        })
          
       }
 

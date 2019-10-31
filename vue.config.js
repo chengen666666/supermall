@@ -1,16 +1,14 @@
+// eslint-disable-next-line no-undef
 module.exports = {
-  configureWebpack:{
-    resolve:{
-      extensions:[],
-      alias:{
-        // '@':'src' 默认配置
-        'assets':'@/assets',
-        'common':'@/common',
-        'components':'@/components',
-        'network':'@/network',
-        'views':'@/views'
+  configureWebpack: {
+    resolve: {
+      alias: {
+        'views': '@/views',
+        'components': '@/components',
+        'network': '@/network',
+        'common': '@/common',
+        'assets': '@/assets',
       }
-    },
-    
+    }
   }
 }

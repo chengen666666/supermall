@@ -18,6 +18,12 @@
       pullUpLoad:{
         type:Boolean,
         default:false
+      },
+      data: {
+        type: Array,
+        default() {
+          return []
+        }
       }
     },
     data(){
@@ -70,5 +76,7 @@
 </script>
 
 <style scoped>
-  
+  .wrapper {
+    overflow: hidden;
+  }
 </style>

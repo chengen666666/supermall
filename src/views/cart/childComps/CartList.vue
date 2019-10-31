@@ -28,7 +28,7 @@
 
 <style scoped>
   .cart-list{
-    height: calc(100% - 44px - 49px);
+    height: calc(100% - 44px - 49px - 44px);
   }
   .content{
     height: 100%;
